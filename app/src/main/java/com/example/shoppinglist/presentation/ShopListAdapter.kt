@@ -44,7 +44,6 @@ class ShopListAdapter :
     }
 
 
-
     companion object {
         const val ITEM_SHOP_ENABLED = 1
         const val ITEM_SHOP_DISABLED = -1
