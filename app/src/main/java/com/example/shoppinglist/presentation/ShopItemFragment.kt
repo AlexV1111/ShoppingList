@@ -1,5 +1,6 @@
 package com.example.shoppinglist.presentation
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -10,6 +11,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.media3.common.util.Log
 import com.example.shoppinglist.R
 import com.example.shoppinglist.domain.ShopItem
 import com.google.android.material.textfield.TextInputLayout
@@ -18,6 +20,11 @@ class ShopItemFragment : Fragment() {
 
 
     private lateinit var viewModel: ShopItemViewModel
+    private lateinit var onEditingFinishedListener: OnEditingFinishedListener
+
+    interface OnEditingFinishedListener {
+        fun onEditingFinished()
+    }
 
     private lateinit var tilName: TextInputLayout
     private lateinit var etName: EditText
@@ -37,7 +44,9 @@ class ShopItemFragment : Fragment() {
 
         fun newInstanceAddItem(): Fragment {
             return ShopItemFragment().apply {
-                arguments = Bundle().apply { putString(SCREEN_MODE, MODE_ADD) }
+                arguments = Bundle().apply {
+                    putString(SCREEN_MODE, MODE_ADD)
+                }
             }
         }
 
@@ -51,9 +60,20 @@ class ShopItemFragment : Fragment() {
         }
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (context is OnEditingFinishedListener) {
+            onEditingFinishedListener = context
+        } else {
+            throw RuntimeException("Activity must implement OnEditingFinishedListener")
+        }
+        Log.d("ShopItemFragment", "onAttach")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         parseParams()
+        Log.d("ShopItemFragment", "onCreate")
     }
 
     override fun onCreateView(
@@ -61,7 +81,9 @@ class ShopItemFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d("ShopItemFragment", "onCreateView")
         return inflater.inflate(R.layout.fragment_shop_item, container, false)
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -79,29 +101,58 @@ class ShopItemFragment : Fragment() {
 
 
         observeViewModel()
+        Log.d("ShopItemFragment", "onViewCreated")
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.d("ShopItemFragment", "onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("ShopItemFragment", "onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("ShopItemFragment", "onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("ShopItemFragment", "onStop")
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.d("ShopItemFragment", "onDestroyView")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("ShopItemFragment", "onDestroy")
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        Log.d("ShopItemFragment", "onDetach")
+    }
 
     private fun launchEditMode() {
         viewModel.getShopItem(shopItemId)
-
         viewModel.shopItem.observe(viewLifecycleOwner) {
             etName.setText(it.name)
             etCount.setText(it.count.toString())
-
-            saveButton.setOnClickListener {
-                viewModel.editShopItem(etName.text?.toString(), etCount.text?.toString())
-            }
-
+        }
+        saveButton.setOnClickListener {
+            viewModel.editShopItem(etName.text?.toString(), etCount.text?.toString())
         }
     }
 
     private fun launchAddMode() {
         saveButton.setOnClickListener {
-            val inputName = etName.text.toString()
-            val inputCount = etCount.text.toString()
-            viewModel.addShopItem(inputName, inputCount)
-
+            viewModel.addShopItem(etName.text?.toString(), etCount.text?.toString())
         }
     }
 
@@ -116,7 +167,7 @@ class ShopItemFragment : Fragment() {
         }
         screenMode = mode
         if (screenMode == MODE_EDIT) {
-            if (args.containsKey(SHOP_ITEM_ID)) {
+            if (!args.containsKey(SHOP_ITEM_ID)) {
                 throw RuntimeException("Param shop item id is absent")
             }
             shopItemId = args.getInt(SHOP_ITEM_ID, -1)
@@ -175,7 +226,7 @@ class ShopItemFragment : Fragment() {
         }
 
         viewModel.shouldCloseScreen.observe(viewLifecycleOwner) {
-            activity?.onBackPressed()
+            onEditingFinishedListener.onEditingFinished()
         }
     }
 
