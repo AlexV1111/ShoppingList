@@ -9,7 +9,7 @@ class ShopListMapper {
             id = shopItem.id,
             name = shopItem.name,
             count = shopItem.count,
-            enable = shopItem.enable
+            enabled = shopItem.enable
         )
     }
 
@@ -18,7 +18,7 @@ class ShopListMapper {
             id = shopItemDbModel.id,
             name = shopItemDbModel.name,
             count = shopItemDbModel.count,
-            enable = shopItemDbModel.enable
+            enable = shopItemDbModel.enabled
         )
     }
 
